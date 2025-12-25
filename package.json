@@ -1,0 +1,19 @@
+{
+  "name": "airline-chat",
+  "version": "1.0.0",
+  "description": "Telegram LLM chatbot for airplane WiFi - works with Claude, OpenAI, and Gemini",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": ["telegram", "chatbot", "llm", "cloudflare-workers", "airplane-wifi"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20251225.0",
+    "typescript": "^5.9.3",
+    "wrangler": "^4.54.0"
+  }
+}
