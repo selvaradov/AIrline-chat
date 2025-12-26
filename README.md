@@ -4,6 +4,8 @@ Chat with Claude, ChatGPT, or Gemini through Telegram - works on airplane WiFi t
 
 _Code written by Opus 4.5._
 
+
+
 ## Quick Start (For Users)
 
 1. **Message the bot** [on Telegram](https://t.me/AIrlineChatBot) (username: `@AIrlineChatBot`)
@@ -13,6 +15,8 @@ _Code written by Opus 4.5._
 5. **Start chatting!**
 
 That's it. Your conversation history is saved automatically.
+
+<img height="1500" alt="App logo by Nano Banana Pro" src="https://github.com/user-attachments/assets/5edbcaa6-cb6c-491b-a9fc-ca449bd2dd84" />
 
 ---
 
