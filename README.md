@@ -1,8 +1,13 @@
 # Airline Chat Bot 🤖✈️
 
-Chat with Claude, ChatGPT, or Gemini through Telegram - works on airplane WiFi that only allows messaging apps!
+A Telegram bot that lets you chat with Claude, ChatGPT, or Gemini on messaging-only free aeroplane WiFi, just by bringing your own API key.
 
-_Code written by Opus 4.5._
+I know of at least [two](https://www.preethamrn.com/posts/chatgpt-over-whatsapp) [other](https://medium.com/@suhyeon-tokamak/building-a-free-llm-chatbot-for-airplane-wifi-using-telegram-and-google-gemini-247cc0292df3) earlier projects doing the same thing (though I came up with the idea independently). The main advantage of this version is that there's no end-user setup required besides creating an API key, whereas in other implementations users need to create a new instance of the server. 
+
+As described more below, _technically_ I could read user API keys submitted to the database, but I won't, and you can of course use the LLM provider consoles to set spending limits & revoke API keys. 
+
+
+_All code and remainder of README written by Opus 4.5._
 
 
 
