@@ -6,7 +6,7 @@ _Code written by Opus 4.5._
 
 ## Quick Start (For Users)
 
-1. **Message the bot** on Telegram (get the bot username from whoever's hosting it)
+1. **Message the bot** [on Telegram](https://t.me/AIrlineChatBot) (username: `@AIrlineChatBot`)
 2. **Send** `/start` to begin
 3. **Get a free API key** (recommended: [Gemini](https://aistudio.google.com/apikey))
 4. **Configure it**: `/config gemini YOUR_API_KEY`
