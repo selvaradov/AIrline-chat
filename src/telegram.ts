@@ -22,21 +22,38 @@ export class TelegramClient {
   }
 
   private async sendSingleMessage(chatId: number, text: string): Promise<void> {
-    const body: Record<string, unknown> = {
+    // Try with Markdown parsing first
+    const markdownBody = {
       chat_id: chatId,
       text: text,
-      // No parse_mode - let Telegram render as plain text
-      // LLMs generate unpredictable markdown that often fails parsing
+      parse_mode: 'Markdown',
     };
 
     const response = await fetch(`${this.apiBase}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+      body: JSON.stringify(markdownBody),
     });
 
-    if (!response.ok) {
-      const error = await response.text();
+    if (response.ok) {
+      return;
+    }
+
+    // Markdown parsing failed - fallback to plain text
+    console.log('Markdown parsing failed, retrying as plain text');
+    const plainBody = {
+      chat_id: chatId,
+      text: text,
+    };
+
+    const plainResponse = await fetch(`${this.apiBase}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(plainBody),
+    });
+
+    if (!plainResponse.ok) {
+      const error = await plainResponse.text();
       console.error('Telegram sendMessage failed:', error);
       throw new Error(`Telegram API error: ${error}`);
     }
