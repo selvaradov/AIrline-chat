@@ -2,6 +2,8 @@
 
 Chat with Claude, ChatGPT, or Gemini through Telegram - works on airplane WiFi that only allows messaging apps!
 
+_Code written by Opus 4.5._
+
 ## Quick Start (For Users)
 
 1. **Message the bot** on Telegram (get the bot username from whoever's hosting it)
