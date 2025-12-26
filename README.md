@@ -98,13 +98,13 @@ Bot: [AI responds with explanation...]
 
 ## Privacy & Security
 
-- 🔒 **Your API keys are encrypted** and stored securely
-- 👤 **Each user is isolated** - only you can access your keys
-- 🗑️ **Delete anytime** - Just stop using the bot, no data retention policy
-- 📊 **No tracking** - The bot doesn't log your conversations
-- 🔑 **You control costs** - You pay your LLM provider directly, set your own spending limits
+- 🔒 **Keys encrypted at rest** - Cloudflare KV uses AES-256 encryption
+- 👤 **User isolation** - Other users can't access your keys 
+- 📊 **No logging** - The bot doesn't log conversations or keys
+- 🔑 **You control costs** - Pay your LLM provider directly, set your own spending limits
+- 🗑️ **Rotate anytime** - Change your API key at your provider's dashboard
 
-**Your keys are as secure as the hosting platform** (Cloudflare Workers, industry standard).
+**Honest note:** The bot operator has access to Cloudflare KV and could technically view stored keys. This is true of all hosted services. The code doesn't expose keys, but you're trusting the operator. For maximum safety, set spending limits at your LLM provider.
 
 ---
 

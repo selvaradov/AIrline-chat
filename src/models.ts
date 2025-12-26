@@ -54,7 +54,7 @@ export const MODELS: ModelMetadata[] = [
   // Gemini
   {
     name: 'gemini-3-flash',
-    id: 'gemini-3.0-flash',
+    id: 'gemini-3-flash-preview',
     provider: 'gemini',
     category: 'Gemini 3 (Google)',
     description: 'Fast & free tier!',
@@ -62,7 +62,7 @@ export const MODELS: ModelMetadata[] = [
   },
   {
     name: 'gemini-3-pro',
-    id: 'gemini-3.0-pro',
+    id: 'gemini-3-pro-preview',
     provider: 'gemini',
     category: 'Gemini 3 (Google)',
     description: 'More capable',
