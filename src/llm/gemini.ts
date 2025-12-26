@@ -1,4 +1,5 @@
 import type { ChatMessage } from '../types';
+import { SYSTEM_PROMPT } from './system-prompt';
 
 const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
 
@@ -23,6 +24,9 @@ export async function chatWithGemini(
     },
     body: JSON.stringify({
       contents,
+      systemInstruction: {
+        parts: [{ text: SYSTEM_PROMPT }],
+      },
       generationConfig: {
         maxOutputTokens: 4096,
       },

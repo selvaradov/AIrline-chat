@@ -1,4 +1,5 @@
 import type { ChatMessage } from '../types';
+import { SYSTEM_PROMPT } from './system-prompt';
 
 const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
 
@@ -7,6 +8,15 @@ export async function chatWithOpenAI(
   messages: ChatMessage[],
   model: string
 ): Promise<string> {
+  // OpenAI uses a system message in the messages array
+  const messagesWithSystem = [
+    { role: 'system' as const, content: SYSTEM_PROMPT },
+    ...messages.map(m => ({
+      role: m.role,
+      content: m.content,
+    })),
+  ];
+
   const response = await fetch(OPENAI_API_URL, {
     method: 'POST',
     headers: {
@@ -15,10 +25,7 @@ export async function chatWithOpenAI(
     },
     body: JSON.stringify({
       model,
-      messages: messages.map(m => ({
-        role: m.role,
-        content: m.content,
-      })),
+      messages: messagesWithSystem,
       max_tokens: 4096,
     }),
   });

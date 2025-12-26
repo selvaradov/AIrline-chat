@@ -1,4 +1,5 @@
 import type { ChatMessage } from '../types';
+import { SYSTEM_PROMPT } from './system-prompt';
 
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
 
@@ -17,6 +18,7 @@ export async function chatWithClaude(
     body: JSON.stringify({
       model,
       max_tokens: 4096,
+      system: SYSTEM_PROMPT,
       messages: messages.map(m => ({
         role: m.role,
         content: m.content,
