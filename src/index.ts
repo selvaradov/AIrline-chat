@@ -22,8 +22,13 @@ export default {
     // Webhook info endpoint (useful for debugging)
     if (url.pathname === '/webhook-info' && request.method === 'GET') {
       const telegram = new TelegramClient(env.TELEGRAM_BOT_TOKEN);
-      const info = await telegram.getWebhookInfo();
-      return Response.json(info);
+      const result = await telegram.getWebhookInfo();
+      
+      if (!result.ok) {
+        return Response.json({ error: result.error }, { status: 502 });
+      }
+      
+      return Response.json(result.data);
     }
 
     // Set webhook endpoint (requires webhook secret for auth)
@@ -41,12 +46,22 @@ export default {
       const telegram = new TelegramClient(env.TELEGRAM_BOT_TOKEN);
       const webhookUrl = `${url.origin}/`;
       const result = await telegram.setWebhook(webhookUrl, env.TELEGRAM_WEBHOOK_SECRET);
+      
+      if (!result.ok) {
+        return Response.json({ 
+          success: false, 
+          webhookUrl,
+          secretConfigured: true,
+          message: 'Failed to set webhook',
+          error: result.error
+        }, { status: 500 });
+      }
+      
       return Response.json({ 
-        success: result.ok, 
+        success: true, 
         webhookUrl,
         secretConfigured: true,
-        message: result.ok ? 'Webhook set successfully!' : 'Failed to set webhook',
-        error: result.error
+        message: 'Webhook set successfully!'
       });
     }
 
@@ -67,20 +82,33 @@ export default {
       try {
         const body = await request.json();
         await handleWebhook(body, env);
-        // Always return 200 to Telegram to prevent retries
+        // Return 200 to acknowledge we processed the webhook
         return new Response('OK', { status: 200 });
       } catch (error) {
         console.error('Webhook error:', error);
-        // Still return 200 to prevent Telegram from retrying
+        
+        // Determine if this is a transient error worth retrying
+        const isTransient = error instanceof Error && (
+          error.message.includes('fetch failed') ||
+          error.message.includes('network') ||
+          error.message.includes('timeout') ||
+          error.message.includes('ECONNRESET') ||
+          error.message.includes('503') ||
+          error.message.includes('502')
+        );
+        
+        if (isTransient) {
+          // Return 500 so Telegram will retry this webhook
+          return new Response('Temporary error', { status: 500 });
+        }
+        
+        // Permanent error - acknowledge receipt to prevent useless retries
         return new Response('OK', { status: 200 });
       }
     }
 
-    // Default response for other requests
-    return new Response(
-      'Airline Chat Bot - Send me a message on Telegram!', 
-      { status: 200 }
-    );
+    // Unknown routes return 404
+    return new Response('Not Found', { status: 404 });
   },
 };
 

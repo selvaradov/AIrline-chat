@@ -147,9 +147,16 @@ export class TelegramClient {
   }
 
   // Get webhook info
-  async getWebhookInfo(): Promise<unknown> {
+  async getWebhookInfo(): Promise<{ ok: boolean; data?: unknown; error?: string }> {
     const response = await fetch(`${this.apiBase}/getWebhookInfo`);
-    return response.json();
+    
+    if (!response.ok) {
+      const error = await response.text();
+      return { ok: false, error: `Telegram API error (${response.status}): ${error}` };
+    }
+    
+    const data = await response.json();
+    return { ok: true, data };
   }
 }
 
