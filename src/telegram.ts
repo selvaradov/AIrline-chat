@@ -13,27 +13,21 @@ export class TelegramClient {
   }
 
   // Send a text message, automatically splitting if too long
-  async sendMessage(chatId: number, text: string, parseMode?: 'Markdown' | 'HTML'): Promise<void> {
+  async sendMessage(chatId: number, text: string): Promise<void> {
     const chunks = this.splitMessage(text);
     
     for (const chunk of chunks) {
-      await this.sendSingleMessage(chatId, chunk, parseMode);
+      await this.sendSingleMessage(chatId, chunk);
     }
   }
 
-  private async sendSingleMessage(
-    chatId: number, 
-    text: string, 
-    parseMode?: 'Markdown' | 'HTML'
-  ): Promise<void> {
+  private async sendSingleMessage(chatId: number, text: string): Promise<void> {
     const body: Record<string, unknown> = {
       chat_id: chatId,
       text: text,
+      // No parse_mode - let Telegram render as plain text
+      // LLMs generate unpredictable markdown that often fails parsing
     };
-
-    if (parseMode) {
-      body.parse_mode = parseMode;
-    }
 
     const response = await fetch(`${this.apiBase}/sendMessage`, {
       method: 'POST',
@@ -44,13 +38,6 @@ export class TelegramClient {
     if (!response.ok) {
       const error = await response.text();
       console.error('Telegram sendMessage failed:', error);
-      
-      // If markdown parsing failed, retry without parse mode
-      if (parseMode && error.includes("can't parse")) {
-        await this.sendSingleMessage(chatId, text);
-        return;
-      }
-      
       throw new Error(`Telegram API error: ${error}`);
     }
   }
@@ -112,7 +99,7 @@ export class TelegramClient {
   }
 
   // Set webhook URL for this bot
-  async setWebhook(url: string, secretToken?: string): Promise<boolean> {
+  async setWebhook(url: string, secretToken?: string): Promise<{ ok: boolean; error?: string }> {
     const body: Record<string, string> = { url };
     if (secretToken) {
       body.secret_token = secretToken;
@@ -127,8 +114,9 @@ export class TelegramClient {
     const result = await response.json() as { ok: boolean; description?: string };
     if (!result.ok) {
       console.error('Failed to set webhook:', result.description);
+      return { ok: false, error: result.description };
     }
-    return result.ok;
+    return { ok: true };
   }
 
   // Delete webhook (for switching to polling mode)

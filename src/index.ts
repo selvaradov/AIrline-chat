@@ -26,28 +26,42 @@ export default {
       return Response.json(info);
     }
 
-    // Set webhook endpoint (call this once after deployment)
+    // Set webhook endpoint (requires webhook secret for auth)
     if (url.pathname === '/set-webhook' && request.method === 'POST') {
+      // Require the webhook secret as authorization to prevent hijacking
+      const authHeader = request.headers.get('Authorization');
+      const expectedAuth = `Bearer ${env.TELEGRAM_WEBHOOK_SECRET}`;
+      
+      if (!env.TELEGRAM_WEBHOOK_SECRET || authHeader !== expectedAuth) {
+        return Response.json({ 
+          error: 'Unauthorized. Include header: Authorization: Bearer <your-webhook-secret>' 
+        }, { status: 401 });
+      }
+
       const telegram = new TelegramClient(env.TELEGRAM_BOT_TOKEN);
       const webhookUrl = `${url.origin}/`;
-      const success = await telegram.setWebhook(webhookUrl, env.TELEGRAM_WEBHOOK_SECRET);
+      const result = await telegram.setWebhook(webhookUrl, env.TELEGRAM_WEBHOOK_SECRET);
       return Response.json({ 
-        success, 
+        success: result.ok, 
         webhookUrl,
-        secretConfigured: !!env.TELEGRAM_WEBHOOK_SECRET,
-        message: success ? 'Webhook set successfully!' : 'Failed to set webhook'
+        secretConfigured: true,
+        message: result.ok ? 'Webhook set successfully!' : 'Failed to set webhook',
+        error: result.error
       });
     }
 
     // Main webhook handler (POST to root)
     if (request.method === 'POST') {
-      // Verify the request came from Telegram (if secret is configured)
-      if (env.TELEGRAM_WEBHOOK_SECRET) {
-        const secretHeader = request.headers.get('X-Telegram-Bot-Api-Secret-Token');
-        if (secretHeader !== env.TELEGRAM_WEBHOOK_SECRET) {
-          console.error('Invalid webhook secret');
-          return new Response('Unauthorized', { status: 401 });
-        }
+      // Verify the request came from Telegram using secret token
+      if (!env.TELEGRAM_WEBHOOK_SECRET) {
+        console.error('TELEGRAM_WEBHOOK_SECRET not configured - rejecting webhook');
+        return new Response('Server misconfigured', { status: 500 });
+      }
+
+      const secretHeader = request.headers.get('X-Telegram-Bot-Api-Secret-Token');
+      if (secretHeader !== env.TELEGRAM_WEBHOOK_SECRET) {
+        console.error('Invalid webhook secret');
+        return new Response('Unauthorized', { status: 401 });
       }
 
       try {
@@ -97,7 +111,7 @@ async function handleWebhook(body: unknown, env: Env): Promise<void> {
     // Handle commands
     if (isCommand(text)) {
       const result = await handleCommand(text, userId, env);
-      await telegram.sendMessage(chatId, result.response, 'Markdown');
+      await telegram.sendMessage(chatId, result.response);
       return;
     }
 
@@ -142,7 +156,7 @@ async function handleChatMessage(
   await addToConversationHistory(env.CHAT_KV, userId, text, response);
 
   // Send response (will auto-split if too long)
-  await telegram.sendMessage(chatId, response, 'Markdown');
+  await telegram.sendMessage(chatId, response);
 }
 
 // Auto-register webhook if not already registered or stale
@@ -163,14 +177,14 @@ async function ensureWebhookRegistered(env: Env, origin: string): Promise<void> 
     // Register webhook
     const telegram = new TelegramClient(env.TELEGRAM_BOT_TOKEN);
     const webhookUrl = `${origin}/`;
-    const success = await telegram.setWebhook(webhookUrl, env.TELEGRAM_WEBHOOK_SECRET);
+    const result = await telegram.setWebhook(webhookUrl, env.TELEGRAM_WEBHOOK_SECRET);
     
-    if (success) {
+    if (result.ok) {
       // Store registration time
       await env.CHAT_KV.put(WEBHOOK_REGISTERED_KEY, now.toString());
       console.log(`Webhook auto-registered to ${webhookUrl}`);
     } else {
-      console.error('Failed to auto-register webhook');
+      console.error('Failed to auto-register webhook:', result.error);
     }
   } catch (error) {
     // Don't fail the request if webhook registration fails

@@ -187,6 +187,17 @@ The webhook auto-registers, but you can verify it:
 curl https://airline-chat.YOUR_SUBDOMAIN.workers.dev/webhook-info
 ```
 
+### Manually re-register webhook
+
+If you need to manually trigger webhook registration:
+
+```bash
+curl -X POST https://airline-chat.YOUR_SUBDOMAIN.workers.dev/set-webhook \
+  -H "Authorization: Bearer YOUR_WEBHOOK_SECRET"
+```
+
+(This endpoint requires your `TELEGRAM_WEBHOOK_SECRET` for authorization)
+
 ### View live logs
 
 ```bash
