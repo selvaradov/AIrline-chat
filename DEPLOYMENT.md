@@ -31,15 +31,18 @@ npm run deploy
 
 This will output a URL like: `https://airline-chat.YOUR_SUBDOMAIN.workers.dev`
 
-### 3. Set the Telegram Bot Token Secret
-
-After deploying, set the secret:
+### 3. Set Secrets
 
 ```bash
+# Required: Telegram bot token
 npx wrangler secret put TELEGRAM_BOT_TOKEN
+
+# Required: Webhook secret (prevents spoofed requests)
+# Generate a random string, e.g.: openssl rand -hex 32
+npx wrangler secret put TELEGRAM_WEBHOOK_SECRET
 ```
 
-When prompted, paste your Telegram bot token.
+The webhook secret ensures only Telegram can call your webhook. Without it, anyone could spoof requests.
 
 ### 4. Test Your Bot!
 

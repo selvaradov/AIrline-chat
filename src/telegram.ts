@@ -112,11 +112,16 @@ export class TelegramClient {
   }
 
   // Set webhook URL for this bot
-  async setWebhook(url: string): Promise<boolean> {
+  async setWebhook(url: string, secretToken?: string): Promise<boolean> {
+    const body: Record<string, string> = { url };
+    if (secretToken) {
+      body.secret_token = secretToken;
+    }
+
     const response = await fetch(`${this.apiBase}/setWebhook`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url }),
+      body: JSON.stringify(body),
     });
 
     const result = await response.json() as { ok: boolean; description?: string };

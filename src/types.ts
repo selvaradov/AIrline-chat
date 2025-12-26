@@ -2,6 +2,7 @@
 export interface Env {
   CHAT_KV: KVNamespace;
   TELEGRAM_BOT_TOKEN: string;
+  TELEGRAM_WEBHOOK_SECRET?: string; // Optional secret to verify webhook requests
 }
 
 // Supported LLM models

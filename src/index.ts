@@ -30,16 +30,26 @@ export default {
     if (url.pathname === '/set-webhook' && request.method === 'POST') {
       const telegram = new TelegramClient(env.TELEGRAM_BOT_TOKEN);
       const webhookUrl = `${url.origin}/`;
-      const success = await telegram.setWebhook(webhookUrl);
+      const success = await telegram.setWebhook(webhookUrl, env.TELEGRAM_WEBHOOK_SECRET);
       return Response.json({ 
         success, 
         webhookUrl,
+        secretConfigured: !!env.TELEGRAM_WEBHOOK_SECRET,
         message: success ? 'Webhook set successfully!' : 'Failed to set webhook'
       });
     }
 
     // Main webhook handler (POST to root)
     if (request.method === 'POST') {
+      // Verify the request came from Telegram (if secret is configured)
+      if (env.TELEGRAM_WEBHOOK_SECRET) {
+        const secretHeader = request.headers.get('X-Telegram-Bot-Api-Secret-Token');
+        if (secretHeader !== env.TELEGRAM_WEBHOOK_SECRET) {
+          console.error('Invalid webhook secret');
+          return new Response('Unauthorized', { status: 401 });
+        }
+      }
+
       try {
         const body = await request.json();
         await handleWebhook(body, env);
@@ -153,7 +163,7 @@ async function ensureWebhookRegistered(env: Env, origin: string): Promise<void> 
     // Register webhook
     const telegram = new TelegramClient(env.TELEGRAM_BOT_TOKEN);
     const webhookUrl = `${origin}/`;
-    const success = await telegram.setWebhook(webhookUrl);
+    const success = await telegram.setWebhook(webhookUrl, env.TELEGRAM_WEBHOOK_SECRET);
     
     if (success) {
       // Store registration time
